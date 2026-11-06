@@ -47,7 +47,7 @@ jobs:
                   with urlopen(base + "/health", timeout=1) as response:
                       assert json.load(response)["status"] == "ok"
                   break
-              except URLError:
+              except (URLError, ConnectionError, TimeoutError):
                   if attempt == 29:
                       raise
                   time.sleep(1)
