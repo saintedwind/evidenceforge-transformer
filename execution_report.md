@@ -1,5 +1,11 @@
 # EvidenceForge evaluation
 
+## GitHub Actions, 6 November 2026
+
+The [Linux validation run](https://github.com/saintedwind/evidenceforge-transformer/actions/runs/42278182844) passed on Python 3.11 and 3.12. Each job installed the package, passed Ruff checks, fetched the pinned SciFact files and ran the HTTP suite against the published records. Each reported four passed tests and one skipped test: the E5 HTTP case requires local weights and was checked separately on Windows below.
+
+The Python 3.11 job also built the Docker image, started the non-root service with the real SciFact corpus mounted read-only, checked its health endpoint and retrieved source citations for an official test query. The first CI attempt failed when the readiness probe encountered a connection reset before startup completed. The probe now retries connection resets and timeouts as well as URL errors; the subsequent container run passed. This is a startup and query check, with throughput and sustained load outside its scope.
+
 ## Publication check, 6 November 2026
 
 Version 0.2.1 passed five local test cases on Python 3.12.14. The suite includes twelve official SciFact queries sent concurrently through four HTTP workers and checks that their responses match the sequential requests. The dense HTTP case populates the manager's E5 view, imports a different access policy, then verifies that the former manager receives no documents. All source records and questions come from the published datasets.
@@ -48,4 +54,4 @@ python scripts/evaluate_persianquad.py path/to/test.json --output persianquad-re
 - The real E5 service returned all 20 requested results in dense and hybrid modes on the 48-record subset. The first dense request took 22.866 seconds, including passage encoding. The next hybrid request on the cached view took 0.592 seconds. These are individual requests on a CPU shared with the benchmark.
 - Twelve repeated warm BM25 HTTP requests on the full corpus returned the same response. Median latency was 8.317 ms and p95 was 9.593 ms. This is a local repeated-query measurement. [Raw timings](reports/bm25-http.json)
 - The built 0.2.0 wheel installed into an isolated directory. Its BM25 entry point ran all 300 queries with the core dependencies and NumPy absent. [Installed-wheel result](reports/installed-bm25.json)
-- Ruff lint and formatting checks passed. The CI workflow includes Python 3.11 and 3.12 and a Docker smoke test using SciFact. Local verification covered Windows and Python 3.12. Docker, Python 3.11 and Ollama generation remain unverified in this environment.
+- Ruff lint and formatting checks passed. Local verification covered Windows and Python 3.12. Python 3.11 and Docker were checked later in GitHub Actions as recorded above. Ollama generation remains unverified.
