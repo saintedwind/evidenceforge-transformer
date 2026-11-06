@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 from pathlib import Path
 
 from .benchmark import run_benchmark
@@ -17,6 +18,7 @@ def main():
     serve = commands.add_parser("serve", help="serve the configured corpus")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
+    serve.add_argument("--workers", type=int, default=1)
     benchmark = commands.add_parser("benchmark", help="score the official test judgments")
     benchmark.add_argument("--data", type=Path, default=Path("data/scifact"))
     benchmark.add_argument("--output", type=Path, default=Path("benchmark.json"))
@@ -40,7 +42,9 @@ def main():
     else:
         import uvicorn
 
-        uvicorn.run("evidenceforge.api:app", host=args.host, port=args.port)
+        if args.workers < 1 or (args.workers > 1 and not os.getenv("EVIDENCEFORGE_STATE")):
+            parser.error("multiple workers require a shared EVIDENCEFORGE_STATE SQLite file")
+        uvicorn.run("evidenceforge.api:app", host=args.host, port=args.port, workers=args.workers)
 
 
 if __name__ == "__main__":

@@ -36,7 +36,9 @@ def official_query(data):
 
 
 @contextmanager
-def live_service(corpus: Path, model: str | None = None):
+def live_service(
+    corpus: Path, model: str | None = None, *, state: Path | None = None, rate: int = 120
+):
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
         port = listener.getsockname()[1]
@@ -53,6 +55,9 @@ def live_service(corpus: Path, model: str | None = None):
         EVIDENCEFORGE_DENSE="1" if model else "0",
         EVIDENCEFORGE_MODEL_PATH=model or "",
         OLLAMA_MODEL="",
+        EVIDENCEFORGE_LLM_MODEL="",
+        EVIDENCEFORGE_STATE=str(state) if state else "",
+        EVIDENCEFORGE_REQUESTS_PER_MINUTE=str(rate),
     )
     process = subprocess.Popen(
         [sys.executable, "-m", "evidenceforge.cli", "serve", "--port", str(port)],
@@ -148,7 +153,9 @@ def test_live_bm25_and_acl_replacement(data, official_query):
         restore = {"path": corpus.name, "policy": {"tenant_id": "public", "allowed_roles": []}}
         assert client.post("/ingest", json=restore, headers=ADMIN).status_code == 200
         assert client.post("/query", json=payload, headers=MANAGER).json()["citations"] == []
-        assert client.post("/query", json=payload, headers=PUBLIC).json() == evidence
+        restored = client.post("/query", json=payload, headers=PUBLIC).json()
+        assert restored["citations"] == evidence["citations"]
+        assert restored["corpus_revision"] > evidence["corpus_revision"]
         print("Official SciFact over HTTP: public/manager/reader checked before and after import.")
 
 

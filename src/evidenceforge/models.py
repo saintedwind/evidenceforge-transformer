@@ -68,3 +68,5 @@ class SearchResponse:
     citations: tuple[Citation, ...]
     mode: Mode
     status: str
+    corpus_revision: int = 0
+    generation: dict[str, Any] = field(default_factory=dict)

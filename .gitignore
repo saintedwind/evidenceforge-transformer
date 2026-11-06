@@ -10,3 +10,6 @@ models/
 build/
 dist/
 benchmark.json
+*.sqlite3*
+*.db*
+*.service.log

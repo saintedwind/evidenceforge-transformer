@@ -1,0 +1,22 @@
+{
+  "source": "https://huggingface.co/datasets/BeIR/scifact",
+  "corpus_documents": 5183,
+  "corpus_sha256": "f4a47c54e01f9dfe7f0cbbcae0e1df17c5a90d6553f3a9d5b1ba32184545b3d8",
+  "queries": 100,
+  "question_selection": "First 100 distinct official test query IDs in published qrels order",
+  "clients": 8,
+  "server_processes": 1,
+  "mode": "bm25",
+  "durable": true,
+  "request_quota_for_measurement": 2000,
+  "response_matches_sequential": 100,
+  "http_200": 100,
+  "seconds": 2.671,
+  "requests_per_second": 37.44,
+  "latency_ms": {
+    "median": 184.087,
+    "p95_nearest_rank": 402.302,
+    "maximum": 755.547
+  },
+  "scope": "One local Windows host, warm index, eight client threads. Generation and dense inference disabled. This is not a production capacity guarantee."
+}

@@ -1,11 +1,13 @@
 # Security
 
-EvidenceForge is a single-process service for local evaluation. Keep its port on loopback. Environment keys provide the demo identities. A shared deployment needs an identity provider, transport security, request limits and audit logs.
+EvidenceForge is a local evaluation service with optional SQLite state for workers on one host. Keep its port on loopback. Environment keys provide the identities; an internet-facing deployment still needs an identity provider, TLS and proxy-level connection and abuse limits. Those external systems are not configured or claimed as validated here.
 
-The server checks tenant equality and role intersection before building an index. The view cache is keyed by tenant and roles. Import replaces the corpus and clears the cache. A request already using a view can finish on that snapshot.
+The server checks tenant equality and role intersection before building an index. The view cache is keyed by tenant and roles. Imports commit an entire validated corpus and a new revision transactionally. Workers refresh their views from the shared database before querying. A revision change detected before returning a response produces 409. Responses already sent to clients cannot be revoked, and this is not a guarantee of global instantaneous revocation.
 
-Set the import root to a directory controlled by the operator. The server restricts imports to JSONL files under that root, limits file and row size, checks each document and commits the replacement only after validation. A restart reloads the startup corpus.
+Set the import root to a directory controlled by the operator. The server restricts imports to JSONL files under that root, limits file and row size, checks each document and commits the replacement only after validation. SQLite state survives a restart, including ACLs. Without a state file, the original process-local restart behavior remains. Keep the database on local disk, restrict its filesystem permissions and maintain tested backups. Database encryption is not provided by this application.
 
-Configure Ollama only at an endpoint that may receive the source excerpts. The draft filter checks source IDs. Treat document text and drafts as untrusted content and inspect claims against the excerpts.
+The model endpoint is restricted to loopback. Redirects and environment proxies are disabled. The model receives authorized excerpts only; the response must select an exact quotation from one of them. The application displays that source quotation, not unchecked model prose. It rejects mismatched IDs, invented quotations, malformed output and incomplete generations. This bounds what is displayed but does not prove relevance, truth of the original source, or general prompt-injection resistance.
+
+The shared generation lease expires after a bounded interval so a crashed worker cannot block it indefinitely. Request quotas are fixed-window limits based on the host clock; deployments need synchronized clocks and external abuse protection. Audit metadata excludes source text and keys. Operator console access, database access and model-server administration are separate trust boundaries.
 
 Report security issues privately to the maintainer. Include the version, the request shape and the observed behavior. Redact keys and document contents.
