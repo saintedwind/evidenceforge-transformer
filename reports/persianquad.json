@@ -1,0 +1,24 @@
+{
+  "source": "https://raw.githubusercontent.com/BigData-IsfahanUni/PersianQuAD/37f5c158ea4c3c308e630f3038fcfc331f58c6e3/Dataset/test.json",
+  "source_sha256": "b9f6236506b59b5b0a5c8606392fa7bda3d1f1610478b471bf75e874e765b26d",
+  "published_contexts": 35,
+  "published_answerable_annotations": 1000,
+  "evaluated_unique_questions": 997,
+  "seconds": 79.253,
+  "scope": "Find annotated source paragraphs within the 35 published test contexts.",
+  "bm25": {
+    "recall@5": 0.9899699097291875,
+    "ndcg@10": 0.9779960656159801,
+    "mrr@10": 0.9726067090159367
+  },
+  "dense": {
+    "recall@5": 0.9899699097291875,
+    "ndcg@10": 0.9708184157916846,
+    "mrr@10": 0.9630832975115824
+  },
+  "hybrid_rrf": {
+    "recall@5": 0.995987963891675,
+    "ndcg@10": 0.9819169650003008,
+    "mrr@10": 0.9768304914744232
+  }
+}

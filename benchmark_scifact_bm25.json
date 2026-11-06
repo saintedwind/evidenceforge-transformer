@@ -1,0 +1,20 @@
+{
+  "dataset": "BEIR SciFact (official corpus, queries, qrels/test.tsv)",
+  "corpus_documents": 5183,
+  "test_qrels": 339,
+  "evaluated_queries": 300,
+  "runtime_seconds": 11.28,
+  "python": "3.11.16",
+  "versions": {},
+  "metrics_definition": {
+    "recall@5": "macro mean over qrel queries: |retrieved top 5 intersect relevant| / |relevant|",
+    "ndcg@10": "macro mean graded DCG@10 / ideal DCG@10; gain=2^relevance-1, discount=log2(rank+1)",
+    "mrr@10": "macro mean reciprocal rank of first relevant item in top 10"
+  },
+  "unjudged_caveat": "Unjudged retrieved documents are not established non-relevant; BEIR qrels are incomplete judgments.",
+  "bm25": {
+    "recall@5": 0.7209444444444444,
+    "ndcg@10": 0.6646172354026958,
+    "mrr@10": 0.6339986772486773
+  }
+}

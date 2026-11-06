@@ -1,0 +1,19 @@
+{
+  "corpus_documents": 5183,
+  "test_qrels": 339,
+  "evaluated_queries": 300,
+  "candidate_depth": 100,
+  "runtime_seconds": 11.125,
+  "python": "3.12.14",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "data_sha256": {
+    "corpus.jsonl": "f4a47c54e01f9dfe7f0cbbcae0e1df17c5a90d6553f3a9d5b1ba32184545b3d8",
+    "queries.jsonl": "d893cb3883e50906995d70ac86650b034f6231ca2cc4ba93ca75e0fa36b78686",
+    "qrels/test.tsv": "0864bb985e0ca2367ba217977e72004d549054b2b06666ed9d4825ac7c21284c"
+  },
+  "bm25": {
+    "recall@5": 0.7209444444444444,
+    "ndcg@10": 0.6646172354026965,
+    "mrr@10": 0.6339986772486772
+  }
+}

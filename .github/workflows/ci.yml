@@ -1,0 +1,62 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - run: pip install '.[data,test]'
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: evidenceforge fetch --data data/scifact
+      - run: pytest -q
+      - if: matrix.python == '3.11'
+        name: Run the container against SciFact
+        run: |
+          docker build -t evidenceforge:ci .
+          docker run -d --rm --name evidenceforge-ci -p 127.0.0.1:8000:8000 \
+            --mount "type=bind,src=$PWD/data/scifact,dst=/data,readonly" \
+            -e EVIDENCEFORGE_CORPUS=/data/corpus.jsonl \
+            -e EVIDENCEFORGE_API_KEYS=ci-review-key=public:reader evidenceforge:ci
+          trap 'docker logs evidenceforge-ci; docker rm -f evidenceforge-ci' EXIT
+          python - <<'PY'
+          import json
+          import time
+          from pathlib import Path
+          from urllib.error import URLError
+          from urllib.request import Request, urlopen
+          from evidenceforge.benchmark import read_queries
+
+          base = "http://127.0.0.1:8000"
+          for attempt in range(30):
+              try:
+                  with urlopen(base + "/health", timeout=1) as response:
+                      assert json.load(response)["status"] == "ok"
+                  break
+              except URLError:
+                  if attempt == 29:
+                      raise
+                  time.sleep(1)
+          queries, qrels = read_queries(Path("data/scifact"))
+          request = Request(
+              base + "/query",
+              data=json.dumps({"query": queries[next(iter(qrels))], "mode": "bm25"}).encode(),
+              headers={"Content-Type": "application/json", "x-api-key": "ci-review-key"},
+          )
+          with urlopen(request, timeout=15) as response:
+              assert json.load(response)["citations"]
+          PY
