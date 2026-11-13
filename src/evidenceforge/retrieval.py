@@ -24,6 +24,8 @@ def rrf(
 
 
 def evidence_span(text: str, query: str, limit: int = 280) -> tuple[int, int]:
+    if len(text) <= limit:
+        return 0, len(text)
     terms = set(tokenize(query))
     if limit > 280:
         matches = [
@@ -57,11 +59,48 @@ def evidence_span(text: str, query: str, limit: int = 280) -> tuple[int, int]:
             if coverage > best_score + 1e-12:
                 best, best_score = start, coverage
         return best, min(len(text), best + limit)
-    hit = next(
-        (match.start() for match in _TOKEN.finditer(text) if match.group().casefold() in terms), 0
-    )
-    start = min(max(0, hit - limit // 4), max(0, len(text) - limit))
-    return start, min(len(text), start + limit)
+    return _citation_window(text, terms, limit)
+
+
+def _citation_window(text: str, terms: set[str], limit: int) -> tuple[int, int]:
+    """Maximize distinct query-term coverage, downweighting frequent document terms."""
+    matches = []
+    for match in _TOKEN.finditer(text):
+        term = match.group().casefold()
+        if term in terms and match.end() - match.start() <= limit:
+            matches.append((match.start(), match.end(), term))
+    if not matches:
+        return 0, limit
+
+    weights = {term: 1 / n for term, n in Counter(term for _, _, term in matches).items()}
+    last = len(text) - limit
+    # A window can gain a complete token when its right edge reaches the token end.
+    # Also try starts that leave context before a matching term.
+    starts = {0}
+    for begin, end, _ in matches:
+        starts.add(min(last, max(0, end - limit)))
+        starts.add(min(last, max(0, begin - limit // 4)))
+
+    counts: Counter[str] = Counter()
+    left = right = 0
+    coverage = 0.0
+    best, best_score = 0, -1.0
+    for start in sorted(starts):
+        while right < len(matches) and matches[right][1] <= start + limit:
+            term = matches[right][2]
+            if not counts[term]:
+                coverage += weights[term]
+            counts[term] += 1
+            right += 1
+        while left < right and matches[left][0] < start:
+            term = matches[left][2]
+            counts[term] -= 1
+            if not counts[term]:
+                coverage -= weights[term]
+            left += 1
+        if coverage > best_score + 1e-12:
+            best, best_score = start, coverage
+    return best, best + limit
 
 
 class SearchIndex:

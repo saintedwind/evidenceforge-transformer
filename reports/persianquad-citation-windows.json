@@ -1,0 +1,34 @@
+{
+  "source": "https://raw.githubusercontent.com/BigData-IsfahanUni/PersianQuAD/37f5c158ea4c3c308e630f3038fcfc331f58c6e3/Dataset/test.json",
+  "source_sha256": "b9f6236506b59b5b0a5c8606392fa7bda3d1f1610478b471bf75e874e765b26d",
+  "baseline_wheel": "https://github.com/saintedwind/evidenceforge-transformer/releases/download/v0.3.0/evidenceforge-0.3.0-py3-none-any.whl",
+  "baseline_sha256": "1cf052b102fa1cc73e7729bc0d873c88ed787b7fdb6fc0ca1dcb1e91008f122f",
+  "python": "3.12.14",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "publisher_contexts": 35,
+  "answerable_question_ids": 1000,
+  "invalid_publisher_offsets_excluded": 1,
+  "mode": "bm25",
+  "top_k": 5,
+  "baseline": {
+    "gold_context_at_1": 956,
+    "gold_context_at_5": 990,
+    "answer_span_at_1": 396,
+    "answer_span_at_5": 410,
+    "verbatim_citations_checked": 4984,
+    "median_http_ms": 3.105,
+    "p95_http_ms": 4.415
+  },
+  "current": {
+    "gold_context_at_1": 956,
+    "gold_context_at_5": 990,
+    "answer_span_at_1": 717,
+    "answer_span_at_5": 736,
+    "verbatim_citations_checked": 4984,
+    "median_http_ms": 3.714,
+    "p95_http_ms": 8.454
+  },
+  "same_rankings_and_scores": 1000,
+  "gained_answer_span": 382,
+  "lost_answer_span": 56
+}

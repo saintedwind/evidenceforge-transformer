@@ -225,3 +225,24 @@ def test_live_concurrent_queries(data):
         with ThreadPoolExecutor(max_workers=4) as workers:
             actual = list(workers.map(retrieve, payloads))
         assert actual == expected
+
+
+def test_live_citation_contains_the_relevant_sentence_fragment(data):
+    queries, qrels = read_queries(data)
+    corpus = data / "corpus.jsonl"
+    doc_id = "5953485"
+    assert qrels["49"][doc_id] > 0
+    original = next(doc.text for doc in load_beir_corpus(corpus) if doc.doc_id == doc_id)
+    with live_service(corpus) as client:
+        response = client.post(
+            "/query", json={"query": queries["49"], "mode": "bm25"}, headers=PUBLIC
+        ).raise_for_status()
+    citation = next(c for c in response.json()["citations"] if c["doc_id"] == doc_id)
+    start, end = citation["start"], citation["end"]
+    assert 0 <= start < end <= len(original)
+    assert end - start == 280
+    assert original[start:end] == citation["snippet"]
+    assert (
+        "forms a complex with Dicer through direct protein-protein interaction"
+        in citation["snippet"]
+    )

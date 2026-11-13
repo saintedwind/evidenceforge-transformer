@@ -66,7 +66,7 @@ Use `--model-path` with the benchmark to select a local checkpoint. The first de
 
 - `GET /health` reports the corpus revision, document count and configured capabilities. `GET /ready` returns 503 for an empty corpus or an unavailable configured model.
 - `POST /query` requires `x-api-key`. The response includes the requested and effective modes. Hybrid falls back to BM25 when E5 is disabled. An explicit dense request returns 503 in that setup.
-- Each result includes the document ID, title, score and a verbatim excerpt. `start` and `end` are Unicode character offsets in the original document text. Cosine and RRF scores describe ranking. The `evidence_candidates` status leaves relevance and factual support open for review. Responses also include `corpus_revision`, `answer_source` and generation metadata.
+- Each result includes the document ID, title, score and a verbatim excerpt. The standard 280-character excerpt uses weighted coverage of distinct query terms, giving less weight to terms that repeat in that document. `start` and `end` are Unicode character offsets in the original document text. Cosine and RRF scores describe ranking. The `evidence_candidates` status leaves relevance and factual support open for review. Responses also include `corpus_revision`, `answer_source` and generation metadata.
 - `POST /ingest` requires `x-admin-token` and a configured `EVIDENCEFORGE_IMPORT_ROOT`. It validates an entire JSONL file under that directory before replacing the in-memory collection.
 
 An API key mapping has the form `key=tenant:role|role`. Multiple mappings are comma-separated. The stock SciFact corpus uses tenant `public`. A scoped document can carry both `tenant_id` and `allowed_roles` at the top level. An administrator can also assign a collection-wide `policy` in an import request for a source with no per-document ACL. An empty role list grants access to all roles within that tenant. A tenant named `public` remains a separate tenant.
@@ -123,6 +123,8 @@ ruff format --check .
 ```
 
 The tests use the published SciFact records and test judgments. They launch Uvicorn over loopback, send requests with different test identities and check excerpts against the original text. Set `EVIDENCEFORGE_TEST_DATA` to use an existing copy of SciFact. Set `EVIDENCEFORGE_TEST_MODEL` to the local E5 checkpoint for the dense HTTP test. That test uses the first 48 unchanged corpus rows to keep the CPU run short.
+
+[Citation-window comparison](reports/CITATION_EVALUATION.md): over 1,000 human-annotated PersianQuAD questions, a top-five citation contained a complete reference answer span in 736 cases, up from 410 with the released 0.3.0 wheel. Document ranks and scores matched exactly. The report includes the losses, latency tradeoff and commands to reproduce the comparison.
 
 The operations suite starts independent HTTP server processes, imports the original SciFact corpus with an access-test policy, checks cross-process revocation and restarts from the saved database with the startup file unavailable. Other cases check shared quotas, request-size refusal and quotation attribution using original source text. Test identities and access policies are controls, not generated benchmark documents or labels.
 
